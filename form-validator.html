@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>使用策略模式验证表单</title>
+</head>
+<body>
+
+    <script>
+
+        function asyncMap(
+            objArr,
+            option,
+            func,
+            callback,
+            source
+        ) {
+
+            const objArrKeys = Object.keys(objArr);
+            const objArrLength = objArrKeys.length;
+            let total = 0;
+            const results = [];
+            const pending = new Promise((resolve, reject) => {
+                const next = (errors) => {
+                    results.push.apply(results, errors);
+                    total++;
+                    if (total === objArrLength) {
+                        callback(results);
+                        return results.length
+                        ? reject()
+                        : resolve(source);
+                    }
+                };
+                if (!objArrKeys.length) {
+                    callback(results);
+                    resolve(source);
+                }
+                objArrKeys.forEach(key => {
+                    const arr = objArr[key];
+                    asyncParallelArray(arr, func, next);
+                });
+            });
+            pending.catch(e => e);
+            return pending;
+        }
+
+        const descriptor = {
+            username: {
+                required: true,
+                validator(rule, value, callback) {
+                    callback(new Error('e3'));
+                },
+            },
+            password: {
+                type: 'string',
+                required: true,
+                message: '请填写密码'
+            }
+        }
+
+        class Schema {
+            rules = null;
+            constructor(descriptor) {
+                this.define(descriptor);
+            }
+
+            define(rules) {
+                this.rules = {};
+
+                Object.keys(rules).forEach(name => {
+                    const item = rules[name];
+                    this.rules[name] = Array.isArray(item) ? item : [item];
+                });
+            }
+
+            validate(source_, cb) {
+                let source= source_;
+                let options = {};
+                let callback = cb;
+
+                const series = {};
+                const keys = Object.keys(this.rules);
+
+                keys.forEach(z => {
+                    const arr = this.rules[z];
+                    let value = source[z];
+                    arr.forEach(r => {
+                        let rule = r;
+                        rule = { ...rule };
+
+                        rule.field = z;
+                        rule.fullField = rule.fullField || z;
+                        series[z] = series[z] || [];
+                        series[z].push({
+                            rule,
+                            value,
+                            source,
+                            field: z,
+                        });
+                    });
+                });
+                const errorFields = {};
+                return asyncMap(
+                        series,
+                        options,
+                        (data, doIt) => {
+
+                        })
+            }
+        }
+
+    </script>
+</body>
+</html>
