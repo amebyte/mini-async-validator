@@ -7,6 +7,28 @@
 
     <script>
 
+        function asyncParallelArray(
+            arr,
+            func,
+            callback
+        ) {
+            const results = [];
+            let total = 0;
+            const arrLength = arr.length;
+
+            function count(errors) {
+                results.push(...(errors || []));
+                total++;
+                if (total === arrLength) {
+                    callback(results);
+                }
+            }
+
+            arr.forEach(a => {
+                func(a, count);
+            });
+        }
+
         function asyncMap(
             objArr,
             option,
@@ -26,14 +48,10 @@
                     if (total === objArrLength) {
                         callback(results);
                         return results.length
-                        ? reject()
+                        ? reject(results)
                         : resolve(source);
                     }
                 };
-                if (!objArrKeys.length) {
-                    callback(results);
-                    resolve(source);
-                }
                 objArrKeys.forEach(key => {
                     const arr = objArr[key];
                     asyncParallelArray(arr, func, next);
