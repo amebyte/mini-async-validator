@@ -43,6 +43,7 @@
             const results = [];
             const pending = new Promise((resolve, reject) => {
                 const next = (errors) => {
+                    // 使用array.push.apply()进行数组合并
                     results.push.apply(results, errors);
                     total++;
                     if (total === objArrLength) {
@@ -123,7 +124,7 @@
                         (data, doIt) => {
                             const rule = data.rule;
                             rule.field = data.field;
-                            
+
                             function cb(e) {
 
                             }
