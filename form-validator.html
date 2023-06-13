@@ -121,7 +121,19 @@
                         series,
                         options,
                         (data, doIt) => {
+                            const rule = data.rule;
+                            rule.field = data.field;
+                            
+                            function cb(e) {
 
+                            }
+
+                            try {
+                                res = rule.validator(rule, data.value, cb, data.source, options);
+                            } catch (error) {
+                                console.error?.(error);
+                                cb(error.message);
+                            }
                         })
             }
         }
