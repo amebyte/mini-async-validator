@@ -91,10 +91,14 @@
                 });
             }
 
-            validate(source_, cb) {
+            validate(source_, o, oc) {
                 let source= source_;
-                let options = {};
-                let callback = cb;
+                let options = o;
+                let callback = oc;
+                if (typeof options === 'function') {
+                    callback = options;
+                    options = {};
+                }
 
                 const series = {};
                 const keys = Object.keys(this.rules);
