@@ -130,7 +130,10 @@
                             rule.field = data.field;
 
                             function cb(e) {
-
+                                let errorList = Array.isArray(e) ? e : [e];
+                                if (errorList.length && rule.message !== undefined) {
+                                    errorList = [].concat(rule.message);
+                                }
                             }
 
                             try {
