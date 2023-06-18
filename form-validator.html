@@ -139,7 +139,7 @@
                             try {
                                 res = rule.validator(rule, data.value, cb, data.source, options);
                             } catch (error) {
-                                console.error?.(error);
+                                console.error(error);
                                 cb(error.message);
                             }
                         })
