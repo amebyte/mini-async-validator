@@ -69,7 +69,7 @@
                     if (total === objArrLength) {
                         callback(results);
                         return results.length
-                        ? reject(results)
+                        ? reject({ errors: results })
                         : resolve(source);
                     }
                 };
@@ -207,10 +207,10 @@
         const descriptor = {
             username: {
                 required: true,
-                // message: "请输入内容",
+                message: "请输入内容",
                 validator(rule, value, callback) {
                     console.log("value", value);
-                    callback();
+                    callback("22");
                 },
             },
             password: {
