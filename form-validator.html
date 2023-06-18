@@ -12,12 +12,12 @@
             const validate =
                 rule.required || (!rule.required && source.hasOwnProperty(rule.field));
             if (validate) {
-                if (!rule.required && (value === undefined || value === null)) {
+                if (!rule.required && (value === undefined || value === null || value === "")) {
                     return callback();
                 } else if (
                     rule.required &&
                     (!source.hasOwnProperty(rule.field) ||
-                    (value === undefined || value === null))
+                    (value === undefined || value === null || value === ""))
                 ) {
                     errors.push("请输入内容");
                 }
@@ -160,7 +160,7 @@
                         const rule = data.rule;
                         rule.field = data.field;
 
-                        function cb(e) {
+                        function cb(e = []) {
                             let errorList = Array.isArray(e) ? e : [e];
                             if (errorList.length && rule.message !== undefined) {
                                 errorList = [].concat(rule.message);
@@ -210,21 +210,23 @@
                 // message: "请输入内容",
                 validator(rule, value, callback) {
                     console.log("value", value);
-                    callback("e3");
+                    callback();
                 },
             },
-            // password: {
-            //     type: 'string',
-            //     required: true,
-            //     message: '请填写密码'
-            // }
+            password: {
+                type: 'string',
+                required: true,
+                message: '请填写密码'
+            }
         }
         new Schema(descriptor).validate(
-            { username: '2' },
+            { username: '2', password: "555" },
             errors => {
                 console.log("errors", errors);
             },
-        )
+        ).then(() => {
+            console.log("验证成功~");
+        })
         .catch(({ errors }) => {
             console.log("catch", errors);
         })
