@@ -62,20 +62,6 @@
             return pending;
         }
 
-        const descriptor = {
-            username: {
-                required: true,
-                validator(rule, value, callback) {
-                    callback(new Error('e3'));
-                },
-            },
-            password: {
-                type: 'string',
-                required: true,
-                message: '请填写密码'
-            }
-        }
-
         class Schema {
             rules = null;
             constructor(descriptor) {
@@ -98,6 +84,29 @@
                 if (typeof options === 'function') {
                     callback = options;
                     options = {};
+                }
+
+                function complete(results) {
+                    let errors = [];
+                    let fields = {};
+
+                    function add(e) {
+                        if (Array.isArray(e)) {
+                            errors = errors.concat(...e);
+                        } else {
+                            errors.push(e);
+                        }
+                    }
+
+                    for (let i = 0; i < results.length; i++) {
+                        add(results[i]);
+                    }
+                    if (!errors.length) {
+                        callback(null, source);
+                    } else {
+                        // fields = convertFieldsError(errors);
+                        callback(errors, fields);
+                    }
                 }
 
                 const series = {};
@@ -123,28 +132,62 @@
                 });
                 const errorFields = {};
                 return asyncMap(
-                        series,
-                        options,
-                        (data, doIt) => {
-                            const rule = data.rule;
-                            rule.field = data.field;
+                    series,
+                    options,
+                    (data, doIt) => {
+                        const rule = data.rule;
+                        rule.field = data.field;
 
-                            function cb(e) {
-                                let errorList = Array.isArray(e) ? e : [e];
-                                if (errorList.length && rule.message !== undefined) {
-                                    errorList = [].concat(rule.message);
-                                }
+                        function cb(e) {
+                            let errorList = Array.isArray(e) ? e : [e];
+                            if (errorList.length && rule.message !== undefined) {
+                                errorList = [].concat(rule.message);
                             }
+                            let filledErrors = errorList;
+                            if (options.first && filledErrors.length) {
+                                errorFields[rule.field] = 1;
+                                return doIt(filledErrors);
+                            }
+                            doIt(filledErrors);
+                        }
 
-                            try {
-                                res = rule.validator(rule, data.value, cb, data.source, options);
-                            } catch (error) {
-                                console.error(error);
-                                cb(error.message);
-                            }
-                        })
+                        try {
+                            rule.validator(rule, data.value, cb, data.source, options);
+                        } catch (error) {
+                            console.error(error);
+                            cb(error.message);
+                        }
+                    },
+                    results => {
+                        complete(results);
+                    },
+                    source
+                );
             }
         }
+
+        const descriptor = {
+            username: {
+                required: true,
+                validator(rule, value, callback) {
+                    callback(new Error('e3'));
+                },
+            },
+            // password: {
+            //     type: 'string',
+            //     required: true,
+            //     message: '请填写密码'
+            // }
+        }
+        new Schema(descriptor).validate(
+            { v2: '2' },
+            errors => {
+            console.log("errors", errors);
+            },
+        )
+        .catch(({ errors }) => {
+            console.log("catch", errors);
+        })
 
     </script>
 </body>
