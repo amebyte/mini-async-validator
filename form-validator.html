@@ -7,6 +7,26 @@
 
     <script>
 
+        const string = (rule, value, callback, source) => {
+            const errors = [];
+            const validate =
+                rule.required || (!rule.required && source.hasOwnProperty(rule.field));
+            if (validate) {
+                if (!rule.required && (value === undefined || value === null)) {
+                    return callback();
+                } else if (
+                    rule.required &&
+                    (!source.hasOwnProperty(rule.field) ||
+                    (value === undefined || value === null))
+                ) {
+                    errors.push("请输入内容");
+                }
+            }
+            callback(errors);
+        }
+
+        const validators = { string }
+
         function asyncParallelArray(
             arr,
             func,
@@ -119,6 +139,8 @@
                         let rule = r;
                         rule = { ...rule };
 
+                        rule.validator = this.getValidationMethod(rule);
+
                         rule.field = z;
                         rule.fullField = rule.fullField || z;
                         series[z] = series[z] || [];
@@ -164,13 +186,31 @@
                     source
                 );
             }
+
+            getValidationMethod(rule) {
+                if (typeof rule.validator === 'function') {
+                    return rule.validator;
+                }
+                const keys = Object.keys(rule);
+                const messageIndex = keys.indexOf('message');
+                if (messageIndex !== -1) {
+                    keys.splice(messageIndex, 1);
+                }
+                if (keys.length === 1 && keys[0] === 'required') {
+                    return validators.required;
+                }
+                const type = rule.type || 'string';
+                return validators[type] || undefined;
+            }
         }
 
         const descriptor = {
             username: {
                 required: true,
+                // message: "请输入内容",
                 validator(rule, value, callback) {
-                    callback(new Error('e3'));
+                    console.log("value", value);
+                    callback("e3");
                 },
             },
             // password: {
@@ -180,9 +220,9 @@
             // }
         }
         new Schema(descriptor).validate(
-            { v2: '2' },
+            { username: '2' },
             errors => {
-            console.log("errors", errors);
+                console.log("errors", errors);
             },
         )
         .catch(({ errors }) => {
