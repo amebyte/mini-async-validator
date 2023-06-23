@@ -219,8 +219,9 @@
                 message: '请填写密码'
             }
         }
-        new Schema(descriptor).validate(
-            { username: '2', password: "555" },
+        const validator = new Schema(descriptor)
+        validator.validate(
+            { username: '2' },
             errors => {
                 console.log("errors", errors);
             },
