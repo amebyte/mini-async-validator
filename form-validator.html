@@ -191,14 +191,6 @@
                 if (typeof rule.validator === 'function') {
                     return rule.validator;
                 }
-                const keys = Object.keys(rule);
-                const messageIndex = keys.indexOf('message');
-                if (messageIndex !== -1) {
-                    keys.splice(messageIndex, 1);
-                }
-                if (keys.length === 1 && keys[0] === 'required') {
-                    return validators.required;
-                }
                 const type = rule.type || 'string';
                 return validators[type] || undefined;
             }
@@ -207,10 +199,11 @@
         const descriptor = {
             username: {
                 required: true,
-                message: "请输入内容",
+                message: "请输入用户名",
                 validator(rule, value, callback) {
-                    console.log("value", value);
-                    callback("22");
+                    setTimeout(() => {
+                        callback("22");
+                    }, 3000);
                 },
             },
             password: {
@@ -221,7 +214,7 @@
         }
         const validator = new Schema(descriptor)
         validator.validate(
-            { username: '2' },
+            { username: '2', password: ''},
             errors => {
                 console.log("errors", errors);
             },
